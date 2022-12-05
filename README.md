@@ -11,7 +11,8 @@ Hay tres clases:
 - El libro mayor
 - El balance
 
-desarrollar mejor
+Los métodos que tiene cada uno son:
+
 
 
 ## Dudas
