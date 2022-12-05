@@ -13,3 +13,12 @@ Hay tres clases:
 
 desarrollar mejor
 
+
+## Dudas
+
+- Como se hace el pyg
+- Cuentas 300 vs 600 de mercaderias
+
+Dudas para preguntar:
+
+- Los negativos en la cuenta del pyg. ¿No habíamos quedado en que parentesis significaba negativo?
