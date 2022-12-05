@@ -1,2 +1,15 @@
 # contabilidad
-paquete de python que se encarga de la contabilidad de una empresa
+
+El objetivo del paquete es hacer las tareas de contabilidad.
+
+## Uso
+
+Hay tres clases:
+
+- El asiento
+- El libro diario
+- El libro mayor
+- El balance
+
+desarrollar mejor
+
