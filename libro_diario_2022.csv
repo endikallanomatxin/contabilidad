@@ -1,0 +1,14 @@
+Número de asiento,Fecha,Concepto,Cuenta,Nombre de cuenta,Debe,Haber
+0,2022-03-14,Ampliación de capital,572,"Bancos e instituciones de crédito c/c vista, euros",750000,
+0,2022-03-14,Ampliación de capital,100,Capital social,,750000
+1,2022-04-10,Pago del alquiler,621,Arrendamientos y cánones,150000,
+1,2022-04-10,Pago del alquiler,572,"Bancos e instituciones de crédito c/c vista, euros",,150000
+2,2022-12-02,Compra de maquinaria,213,Maquinaria,50000,
+2,2022-12-02,Compra de maquinaria,572,"Bancos e instituciones de crédito c/c vista, euros",,50000
+3,2022-12-02,Compra de mercaderías,600,Compras de mercaderías,800000,
+3,2022-12-02,Compra de mercaderías,572,"Bancos e instituciones de crédito c/c vista, euros",,500000
+3,2022-12-02,Compra de mercaderías,400,Proveedores,,300000
+4,2022-12-02,Ventas (NO ENTIENDO),572,"Bancos e instituciones de crédito c/c vista, euros",1800000,
+4,2022-12-02,Ventas (NO ENTIENDO),700,Ventas de mercaderías,,1800000
+5,2022-12-02,Pago de sueldos,640,Sueldos y salarios,160000,
+5,2022-12-02,Pago de sueldos,572,"Bancos e instituciones de crédito c/c vista, euros",,160000
