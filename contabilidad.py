@@ -3,7 +3,12 @@ import numpy as np
 import pandas as pd
 import csv
 import copy
-import ast
+
+
+'''
+CREACIÓN DEL DICCIONARIO DE CUENTAS
+a partir de un .csv
+'''
 
 CUENTAS = {}
 with open('cuentas.csv', mode='r') as f:
@@ -12,46 +17,24 @@ with open('cuentas.csv', mode='r') as f:
     CUENTAS = {int(row[0]):row[1] for row in data}
 
 
+'''
+ASIENTOS Y LIBROS
+Un libro es una lista de asientos
+'''
+
 class Asiento():
-    def __init__(self, concepto, debe, haber, fecha):
+    '''Un asiento es la unidad que compone un libro'''
+
+    def __init__(self, concepto:str, debe:dict, haber:dict, \
+                       fecha=dt.date.today()):
         self.concepto = concepto
-        self.debe     = debe
-        self.haber    = haber
-        self.fecha    = fecha # dt.date.today()
-        
-    def __str__(self):
-        representacion = f"\n\n'{self.fecha}'\t\t{self.concepto}\n"
-        representacion += "-"*64 + "\n"
-        
-        columna_debe = ""
-        for key in self.debe:
-            columna_debe += f"\t{self.debe[key]}€\t{key}\t{CUENTAS[key]}\n"
-        
-        columna_haber = ""
-        for key in self.haber:
-            columna_haber += f"\t{self.haber[key]}€\t{key}\t{CUENTAS[key]}\n"
-        
-        representacion += "\nDEBE\n" +columna_debe + "\nHABER\n"+columna_haber+"\n"
-        
-        return representacion
-    
-    def __repr__(self):
-        representacion = f"\n\n'{self.fecha}'\t\t{self.concepto}\n"
-        representacion += "-"*64 + "\n"
+        self.debe     = debe  # Diccionario de pares cuenta:int : cantidad:float
+        self.haber    = haber # Diccionario de pares cuenta:int : cantidad:float
+        self.fecha    = fecha
 
-        columna_debe = ""
-        for key in self.debe:
-            columna_debe += f"\t{self.debe[key]}€\t{key}\t{CUENTAS[key]}\n"
-        
-        columna_haber = ""
-        for key in self.haber:
-            columna_haber += f"\t{self.haber[key]}€\t{key}\t{CUENTAS[key]}\n"
-        
-        representacion += "\nDEBE\n" +columna_debe + "\nHABER\n"+columna_haber+"\n"
+    def tabla(self) -> pd.DataFrame:
+        # Esta función convierte el asiento en una Pandas DataFrame
 
-        return representacion
-    
-    def tabla(self):
         d = np.full([len(self.debe)+len(self.haber),6], None)
         
         for i, codigo in enumerate(self.debe):
@@ -72,30 +55,51 @@ class Asiento():
         tabla = pd.DataFrame(d, columns=['Fecha', 'Concepto','Cuenta', 'Nombre de cuenta', 'Debe', 'Haber'])
         
         return tabla
+    
+    
+    def __str__(self) -> str:
+        representacion = f"\n\n'{self.fecha}'\t\t{self.concepto}\n"
+        representacion += "-"*64 + "\n"
+        
+        columna_debe = ""
+        for key in self.debe:
+            columna_debe += f"\t{self.debe[key]}€\t{key}\t{CUENTAS[key]}\n"
+        
+        columna_haber = ""
+        for key in self.haber:
+            columna_haber += f"\t{self.haber[key]}€\t{key}\t{CUENTAS[key]}\n"
+        
+        representacion += "\nDEBE\n" +columna_debe + "\nHABER\n"+columna_haber+"\n"
+        
+        return representacion
+    
+    def __repr__(self) -> str:
+        representacion = f"\n\n'{self.fecha}'\t\t{self.concepto}\n"
+        representacion += "-"*64 + "\n"
 
+        columna_debe = ""
+        for key in self.debe:
+            columna_debe += f"\t{self.debe[key]}€\t{key}\t{CUENTAS[key]}\n"
+        
+        columna_haber = ""
+        for key in self.haber:
+            columna_haber += f"\t{self.haber[key]}€\t{key}\t{CUENTAS[key]}\n"
+        
+        representacion += "\nDEBE\n"+columna_debe+"\nHABER\n"+columna_haber+"\n"
+
+        return representacion
     
     
+
 class LibroDiario(list):
+    '''
+    Un LibroDiario es una lista de asientos
+    '''
     
-    def mostrar_por_dias(self):
-        
-        self.fechas = []
-        for asiento in self:
-            if not(asiento.fecha in self.fechas): self.fechas.append(asiento.fecha)
-        
-        for fecha in self.fechas:
-            asientos_en_fecha = [asiento for asiento in self if asiento.fecha == fecha]
-            tabla = asientos_en_fecha[0].tabla()
-            
-            for asiento in asientos_en_fecha:
-                if asiento != asientos_en_fecha[0]:
-                    tabla = pd.concat([tabla, asiento.tabla()], ignore_index=True)
-            print(f"Asientos a {fecha}")
-            display(tabla)
-    
-    
-    def tabla(self):
-        
+    def tabla(self) -> pd.DataFrame:
+        '''
+        Devuelve un Pandas DataFrame con todos los asientos
+        '''
         tabla = self[0].tabla()
         tabla.insert(0,'Número de asiento', [0]*(len(self[0].debe)+len(self[0].haber)))
         for numero_de_asiento, asiento in enumerate(self):
@@ -108,48 +112,89 @@ class LibroDiario(list):
         
         return tabla
 
-
-    def append(self, asiento):
-        if not isinstance(asiento, Asiento):
-            raise RuntimeError("Solo pueden añadirse asientos al libro diario")
-        elif not(sum(asiento.debe.values()) == sum(asiento.haber.values())):
-            raise RuntimeError("El asiento no es correcto")
-        else:
-            super().append(asiento)
     
-    def save_csv(self, name):
+    
+    def save_csv(self, name) -> None:
         self.tabla().to_csv(name + '.csv', index=False)  
         pass
     
-    def load_csv(self, name):
+    def load_csv(self, name) -> None:
+        '''
+        Desarrollar esta función para que parezca un libro diario creado aqui
+        Para eso tendrá que haber alguna forma de entender donde empieza y
+        donde acaba un asiento. Como está ahora la tabla, podría hacerse
+        añadiendo un primary key o un id a la tabla.
+        '''
+
         libro_diario = LibroDiario()
         with open(name+'.csv') as csvfile:
             for row in csv.reader(csvfile):
                 print(row)
         pass
 
-    
+    def append(self, asiento:Asiento) -> None:
+        if not isinstance(asiento, Asiento):
+            raise RuntimeError("Solo pueden añadirse asientos al libro diario")
+        elif not(sum(asiento.debe.values()) == sum(asiento.haber.values())):
+            raise RuntimeError("El asiento no es correcto")
+        else:
+            super().append(asiento)
+
+    def mostrar_por_dias(self) -> None: 
+        self.fechas = []
+        for asiento in self:
+            if not(asiento.fecha in self.fechas): self.fechas.append(asiento.fecha)
+        
+        for fecha in self.fechas:
+            asientos_en_fecha = [asiento for asiento in self if asiento.fecha == fecha]
+            tabla = asientos_en_fecha[0].tabla()
+            
+            for asiento in asientos_en_fecha:
+                if asiento != asientos_en_fecha[0]:
+                    tabla = pd.concat([tabla, asiento.tabla()], ignore_index=True)
+            print(f"Asientos a {fecha}")
+            pd.display(tabla)
+
+
 class LibroMayor(dict):
+    '''
+    Un LibroMayor es un diccionario que se crea a partir de un LibroDiario y
+    tiene la estructura:
+                                cuenta:int : d:DataFrame
+    '''
     
-    def __init__(self, libro_diario):
+    def __init__(self, libro_diario:LibroDiario):
         
-        self.libro_diario = libro_diario
-        self.cuentas = []
-        self.totales = {}
+        self.libro_diario = libro_diario  # libro diario del que se generó
+        self.cuentas = []  # lista con todas las cuentas que aparecen, ordenadas
+        self.totales = {}  # diccionario con los pares cuenta:int : total:float
         
+        # Anadir todas las cuentas de todos los asientos del libro a la lista
+        # self.cuentas y ordenarlas
         for asiento in self.libro_diario:
             for cuenta in asiento.debe:
                 if not(cuenta in self.cuentas): self.cuentas.append(cuenta)
             for cuenta in asiento.haber:
                 if not(cuenta in self.cuentas): self.cuentas.append(cuenta)
-        
         self.cuentas.sort()
         
+        # Generar el diccionario siguiendo el formato:
+        # cuenta:int : d:DataFrame
         for cuenta in self.cuentas:
             d = libro_diario.tabla()
             d = d[d["Cuenta"] == cuenta]
             self[cuenta] = d
+
+
+    def calcular_totales(self) -> None:
+        '''Calcular el diccionario self.totales'''
+
+        for cuenta in self.cuentas:
+            self.totales[cuenta] = self[cuenta]["Debe"]\
+                .sum()-self[cuenta]["Haber"].sum()
+            # La cuenta será positiva si es deudora y negativa si es acreedora.
     
+
     def __repr__(self):
         self.calcular_totales()
         for cuenta in self:
@@ -162,13 +207,15 @@ class LibroMayor(dict):
                 
         return " "
 
-    def calcular_totales(self):
-         for cuenta in self.cuentas:
-            self.totales[cuenta] = self[cuenta]["Debe"].sum()-self[cuenta]["Haber"].sum()
-            # La cuenta será positiva si es deudora y negativa si es acreedora.
+    
 
-            
-# Esta información proviene del JUS/206/2009. Solo se han pasado al 100% las cuentas que no están entre paréntesis
+
+'''
+BALANCE
+'''
+
+# Esta información proviene del JUS/206/2009.
+# Solo se han pasado al 100% las cuentas que no están entre paréntesis
             
 SECCIONES_BALANCE = {
     "Activo":{
@@ -239,31 +286,34 @@ SECCIONES_BALANCE = {
 
     
 class Balance(dict):
+    '''
+    Un balance es un diccionario de diccionarios y almacena las cuentas de cada
+    sección.
+    La información tiene estructura de árbol.
+    SECCION>SUBSECCIÓN>SUBSUBSECCIÓN>total:float
+    En el último nivel se encuentra el total de la cuenta
+    '''
+
+    # (Queda un último nivel en el arbol de las secciones que he agrupado en sus
+    # cuentas padres por simplicidad, queda por hacer).
     
-    def __init__(self, libro):
+    def __init__(self, libro:LibroMayor):
         
+        # Se genera replicando el diccionario ejemplo SECCIONES_BALANCE.
         self["Activo"]          = copy.deepcopy(SECCIONES_BALANCE["Activo"])
         self["Patrimonio neto"] = copy.deepcopy(SECCIONES_BALANCE["Patrimonio neto"])
         self["Pasivo"]          = copy.deepcopy(SECCIONES_BALANCE["Pasivo"])
         
+        # self.totales permite acceder a los totales de las secciones principales
         self.totales = {
             "Activo":0,
             "Patrimonio neto":0,
             "Pasivo":0
         }
         
-        # La clase balance es un diccionario que contiene diccionarios como sub-secciones
-        # y que en el último nivel tiene una lista para cada subsección que contiene las
-        # cuentas que le corresponden
-        
-        # (Queda un último nivel en el arbol de las secciones que he agrupado en sus
-        # cuentas padres por simplicidad, queda por hacer).
-        
-        
         if libro is LibroDiario():
             libro = LibroMayor(libro)
-            
-        self.libro = libro #que debe ser de clase LibroMayor
+        self.libro = libro # que debe ser de clase LibroMayor
         
         self.poner_a_cero()
         self.componer()
@@ -271,7 +321,7 @@ class Balance(dict):
         self.calcular_totales()
         
         
-    def componer(self):
+    def componer(self) -> None:
         for cuenta in self.libro.totales:
             for seccion in SECCIONES_BALANCE:
                 for subseccion in SECCIONES_BALANCE[seccion]:
@@ -293,13 +343,13 @@ class Balance(dict):
     #        for row in data:
     #            cuentas = ast.literal_eval(row[])
                             
-    def poner_a_cero(self):
+    def poner_a_cero(self) -> None:
         for seccion in self:
             for subseccion in self[seccion]:
                 for subsubseccion in self[seccion][subseccion]:
                     self[seccion][subseccion][subsubseccion]=0
                     
-    def calcular_totales(self):
+    def calcular_totales(self) -> None:
         
         self.totales["Activo"]          = 0
         self.totales["Patrimonio neto"] = 0

@@ -4,7 +4,7 @@ El objetivo del paquete es hacer las tareas de contabilidad.
 
 ## Uso
 
-Hay tres clases:
+Clases:
 
 - El asiento
 - El libro diario
@@ -23,3 +23,10 @@ Los métodos que tiene cada uno son:
 Dudas para preguntar:
 
 - Los negativos en la cuenta del pyg. ¿No habíamos quedado en que parentesis significaba negativo?
+
+
+## To Dos
+
+- Actualmente la única clase que tiene sentido guardar es el libro diario.
+Debería pensarse en que el balance tuviera también una forma de guardarse.
+- Acabar de seguir este tutorial para convertirlo en un paquete. https://packaging.python.org/en/latest/tutorials/packaging-projects/
