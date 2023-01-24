@@ -29,4 +29,7 @@ Dudas para preguntar:
 
 - Actualmente la única clase que tiene sentido guardar es el libro diario.
 Debería pensarse en que el balance tuviera también una forma de guardarse.
+
 - Acabar de seguir este tutorial para convertirlo en un paquete. https://packaging.python.org/en/latest/tutorials/packaging-projects/
+
+- Añadir opción de cuentas custom para el balance, como la de clientes

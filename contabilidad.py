@@ -199,7 +199,7 @@ class LibroMayor(dict):
         self.calcular_totales()
         for cuenta in self:
             print(f"\n{cuenta}:\t{CUENTAS[cuenta]}")
-            display(self[cuenta][["Concepto", "Debe", "Haber"]])
+            pd.display(self[cuenta][["Concepto", "Debe", "Haber"]])
             if self.totales[cuenta]>0:
                 print(f"cuenta deudora: {self.totales[cuenta]}")
             if self.totales[cuenta]<0:
