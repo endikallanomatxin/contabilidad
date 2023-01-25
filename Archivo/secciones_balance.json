@@ -1,4 +1,4 @@
-SECCIONES_BALANCE = {
+{"SECCIONES_BALANCE" : {
     "Activo":{
         "Activo no corriente":{
             "Inmovilizado intangible":list(range(200,209+1)),
@@ -62,4 +62,5 @@ SECCIONES_BALANCE = {
             "Deuda con características especiales a corto plazo":[502,507]
         }
     }
+}
 }
