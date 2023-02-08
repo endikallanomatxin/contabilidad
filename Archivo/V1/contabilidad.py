@@ -221,58 +221,6 @@ class LibroMayor(dict):
 
 
 
-class PerdidasYGanancias():
-
-    def __init__(self, libro_diario:LibroDiario, libro_mayor:LibroMayor):
-
-        self.libro_diario = libro_diario
-        self.libro_mayor = libro_mayor
-
-        # Se genera .grupos replicando el diccionario PYG_GRUPOS
-        self.grupos = copy.deepcopy(PYG_GRUPOS)
-        
-        # Calcular los valores del diccionario .grupos y sustituir las listas
-        for grupo in PYG_GRUPOS:
-            if type(PYG_GRUPOS[grupo]) is list:
-                
-                #asiento = Asiento("Regularización de pérdidas y ganancias", ...)
-
-                suma = self.libro_mayor.sumar_cuentas(PYG_GRUPOS[grupo]) # La suma correspondiente
-                self.grupos[grupo] = suma
-            else:
-                total_grupo = 0
-                for subgrupo in PYG_GRUPOS[grupo]:
-                    if type(PYG_GRUPOS[grupo][subgrupo]) is list:
-                        suma = self.libro_mayor.sumar_cuentas(PYG_GRUPOS[grupo][subgrupo]) # La suma correspondiente
-                        self.grupos[grupo][subgrupo] = suma
-                    else:
-                        for subsubgrupo in PYG_GRUPOS[grupo][subgrupo]:
-                            suma = self.libro_mayor.sumar_cuentas(PYG_GRUPOS[grupo][subgrupo][subsubgrupo]) # La suma correspondiente
-                            self.grupos[grupo][subgrupo][subsubgrupo] = suma
-
-        # Calcular el diccionario .totales
-        self.totales = copy.deepcopy(PYG_TOTALES)
-        for total in PYG_TOTALES:
-            suma = 0
-            for grupo_n in PYG_TOTALES[total]:
-                suma += sumar_ultimos_niveles(list(self.grupos.values())[grupo_n-1])
-            self.totales[total] = suma
-
-
-        # Definir la cuenta de pérdidas y ganancias
-        # Asientos de regularización
-
-        self.asientos = []
-    
-    def __repr__(self):
-        return str(list(self.totales.values())[-1])
-    
-    def __float__(self):
-        return float(list(self.totales.values())[-1])
-
-
-    
-
 class Balance(dict):
     '''
     Un balance es un diccionario de diccionarios y almacena las cuentas de cada
@@ -304,6 +252,7 @@ class Balance(dict):
         self.libro = libro # que debe ser de clase LibroMayor
         
         self.poner_a_cero()
+        self.calcular_pyg()
         self.componer()
         self.calcular_totales()
 
@@ -322,13 +271,20 @@ class Balance(dict):
                                 total_de_la_cuenta_a_añadir_al_balance=0
                             self[seccion][subseccion][subsubseccion]+=total_de_la_cuenta_a_añadir_al_balance
                             
+    #def componer_(self):
+    #    # Que vaya leyendo el balance y si en la columna de cuentas aparece, que añada al lado el valor
+    #    with open('cuentas.csv', mode='r') as f:
+    #        data = csv.reader(f,delimiter=';')
+    #        next(data)
+    #        for row in data:
+    #            cuentas = ast.literal_eval(row[])
+                            
     def poner_a_cero(self) -> None:
         for seccion in self:
             for subseccion in self[seccion]:
                 for subsubseccion in self[seccion][subseccion]:
                     self[seccion][subseccion][subsubseccion]=0
                     
-
     def calcular_totales(self) -> None:
         
         self.totales["Activo"]          = 0
@@ -345,6 +301,36 @@ class Balance(dict):
                     elif seccion == "Pasivo":
                         self.totales["Pasivo"] += self[seccion][subseccion][subsubseccion]
     
+    def calcular_pyg(self):
+
+        # Se genera replicando el diccionario PYG_GRUPOS
+        self.pyg_grupos = copy.deepcopy(PYG_GRUPOS)
+        
+        # Calcular los valores del diccionario pyg_grupos y sustituir las listas
+        for grupo in PYG_GRUPOS:
+            if type(PYG_GRUPOS[grupo]) is list:
+                self.pyg_grupos[grupo] = self.libro.sumar_cuentas(PYG_GRUPOS[grupo]) # La suma correspondiente
+            else:
+                total_grupo = 0
+                for subgrupo in PYG_GRUPOS[grupo]:
+                    if type(PYG_GRUPOS[grupo][subgrupo]) is list:
+                        suma = self.libro.sumar_cuentas(PYG_GRUPOS[grupo][subgrupo]) # La suma correspondiente
+                        self.pyg_grupos[grupo][subgrupo] = suma
+                    else:
+                        for subsubgrupo in PYG_GRUPOS[grupo][subgrupo]:
+                            suma = self.libro.sumar_cuentas(PYG_GRUPOS[grupo][subgrupo][subsubgrupo]) # La suma correspondiente
+                            self.pyg_grupos[grupo][subgrupo][subsubgrupo] = suma
+
+        # Calcular el diccionario pyg
+        self.pyg_totales = copy.deepcopy(PYG_TOTALES)
+        for total in PYG_TOTALES:
+            suma = 0
+            for grupo_n in PYG_TOTALES[total]:
+                suma += sumar_ultimos_niveles(list(self.pyg_grupos.values())[grupo_n-1])
+            self.pyg_totales[total] = suma
+
+        # Definir la cuenta de pérdidas y ganancias
+        
 
     def __repr__(self):
         representacion = ""
@@ -359,23 +345,17 @@ class Balance(dict):
 
 
 
-
 class Contabilidad():
 
     def __init__ (self):
         self.libro_diario = LibroDiario()
-        self.actualizar_contabilidad()
-        
+        self.libro_mayor = LibroMayor(self.libro_diario)
+        self.balance = Balance(self.libro_mayor)
 
     def actualizar_contabilidad(self):
         self.libro_mayor = LibroMayor(self.libro_diario)
-        self.regularizar_pyg()
         self.balance = Balance(self.libro_mayor)
 
     def añadir_asiento(self, concepto:str, debe:dict, haber:dict, fecha=dt.date.today()):
         self.libro_diario.append(Asiento(concepto, debe, haber, fecha))
         self.actualizar_contabilidad()
-
-    def regularizar_pyg(self):
-        self.pyg = PerdidasYGanancias(self.libro_diario, self.libro_mayor)
-        
